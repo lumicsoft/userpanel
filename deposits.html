@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Deposits | Earn BNB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific styles for Status Badge & Progress in Deposits */
+        .status-badge {
+            background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 12px; border-radius: 100px;
+            font-size: 10px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(34, 197, 94, 0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    </style>
+</head>
+<body>
+
+    <main class="max-w-7xl mx-auto px-6 relative z-10">
+        
+        <div class="mb-10">
+            <h1 class="text-3xl font-black orbitron italic uppercase tracking-tighter">Active <span class="text-yellow-500">Deposits</span></h1>
+            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">Your running mining packages performance</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 mb-10">
+            <div class="premium-border p-6 text-center">
+                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Active Capital</p>
+                <h3 class="text-2xl font-black orbitron text-white">$ 1,250.00</h3>
+            </div>
+            <div class="premium-border p-6 text-center">
+                <p class="text-[10px] font-black text-yellow-500 uppercase mb-1">Total Daily Profit</p>
+                <h3 class="text-2xl font-black orbitron text-green-400">$ 68.75</h3>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <div class="premium-border p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-black orbitron italic text-white">$1.00 TP Package</h3>
+                        <p class="text-[9px] text-green-400 font-bold uppercase tracking-widest mt-1">Wallet: Main Balance</p>
+                    </div>
+                    <span class="status-badge">Active</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">
+                        <p class="text-[9px] font-black text-gray-500 uppercase mb-1">Daily ROI</p>
+                        <p class="text-lg font-black orbitron text-yellow-500">5.5%</p>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">
+                        <p class="text-[9px] font-black text-gray-500 uppercase mb-1">Daily Return</p>
+                        <p class="text-lg font-black orbitron text-green-400">$0.06</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between text-[11px] font-black orbitron uppercase">
+                        <span class="text-gray-400 italic">Progress</span>
+                        <span class="text-white">75%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 75%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold uppercase text-gray-500">
+                        <span>Started: 15 Days ago</span>
+                        <span>Total: 20 Days</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-border p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-black orbitron italic text-white">$500.00 VIP Node</h3>
+                        <p class="text-[9px] text-green-400 font-bold uppercase tracking-widest mt-1">Wallet: USDT BEP20</p>
+                    </div>
+                    <span class="status-badge">Active</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">
+                        <p class="text-[9px] font-black text-gray-500 uppercase mb-1">Daily ROI</p>
+                        <p class="text-lg font-black orbitron text-yellow-500">6.0%</p>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">
+                        <p class="text-[9px] font-black text-gray-500 uppercase mb-1">Daily Return</p>
+                        <p class="text-lg font-black orbitron text-green-400">$30.00</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between text-[11px] font-black orbitron uppercase">
+                        <span class="text-gray-400 italic">Progress</span>
+                        <span class="text-white">40%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 40%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold uppercase text-gray-500">
+                        <span>Started: 12 Days ago</span>
+                        <span>Total: 30 Days</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="components.js"></script>
+</body>
+</html>

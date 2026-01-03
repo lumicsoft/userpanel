@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History | Earn BNB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific Styles for History Page Filters */
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888; padding: 10px 20px; border-radius: 12px;
+            font-size: 10px; font-weight: 800; text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        .filter-btn.active {
+            background: var(--gold-light);
+            color: black;
+            border-color: var(--gold-light);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+        .history-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px; padding: 20px;
+            transition: all 0.3s;
+        }
+        .history-card:hover { border-color: rgba(255, 215, 0, 0.3); transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <main class="max-w-7xl mx-auto px-6 relative z-10">
+        
+        <div class="mb-10 text-center">
+            <h1 class="text-3xl font-black orbitron italic uppercase tracking-tighter">Transaction <span class="text-yellow-500">History</span></h1>
+            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">Detailed records of your financial activities</p>
+        </div>
+
+        <div class="premium-border p-4 mb-8">
+            <div class="flex justify-center gap-2 md:gap-4">
+                <button onclick="showHistory('deposit')" id="btn-deposit" class="filter-btn active">Deposit</button>
+                <button onclick="showHistory('compounding')" id="btn-compounding" class="filter-btn">Compounding</button>
+                <button onclick="showHistory('income')" id="btn-income" class="filter-btn">Income</button>
+            </div>
+        </div>
+
+        <div id="history-container" class="space-y-4">
+            </div>
+
+    </main>
+
+    <script src="components.js"></script>
+    <script>
+        const data = {
+            deposit: [
+                { date: "21 Dec 2025", time: "14:30 PM", amount: "500.00", tp: "5.5%" },
+                { date: "15 Dec 2025", time: "09:15 AM", amount: "100.00", tp: "5.0%" }
+            ],
+            compounding: [
+                { date: "20 Dec 2025", time: "18:00 PM", amount: "25.50", tp: "0.25%" },
+                { date: "19 Dec 2025", time: "18:00 PM", amount: "22.10", tp: "0.25%" }
+            ],
+            income: [
+                { type: "Referral Bonus", date: "21 Dec 2025", time: "11:00 AM", amount: "50.00", color: "text-cyan-400" },
+                { type: "Daily ROI", date: "20 Dec 2025", time: "00:00 AM", amount: "12.40", color: "text-yellow-500" },
+                { type: "Leadership Bonus", date: "18 Dec 2025", time: "22:00 PM", amount: "150.00", color: "text-green-400" }
+            ]
+        };
+
+        function showHistory(type) {
+            const container = document.getElementById('history-container');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + type).classList.add('active');
+
+            let html = '';
+            if(type === 'deposit' || type === 'compounding') {
+                data[type].forEach(item => {
+                    html += `
+                        <div class="history-card">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-[10px] font-black text-gray-500 uppercase">${item.date} | ${item.time}</p>
+                                    <h3 class="text-lg font-black orbitron text-white mt-1">$ ${item.amount}</h3>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] font-black text-yellow-500 uppercase">TP Rate</p>
+                                    <p class="text-md font-black orbitron text-white">${item.tp}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                data.income.forEach(item => {
+                    html += `
+                        <div class="history-card">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-[10px] font-black ${item.color} uppercase">${item.type}</p>
+                                    <p class="text-[10px] font-bold text-gray-500 uppercase mt-1">${item.date} | ${item.time}</p>
+                                </div>
+                                <div class="text-right">
+                                    <h3 class="text-lg font-black orbitron text-green-400">+$ ${item.amount}</h3>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            }
+            container.innerHTML = html;
+        }
+
+        showHistory('deposit');
+    </script>
+</body>
+</html>
