@@ -8,11 +8,11 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
     document.body.insertAdjacentHTML('afterbegin', dotsHTML);
 
-    // 2. Inject Navbar (Top)
+    // 2. Inject Navbar (Top) - FIXED: Connect Wallet Linked
     const navHTML = `
         <nav class="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center relative z-10">
             <span class="text-2xl font-black orbitron uppercase tracking-tighter italic cursor-pointer" onclick="location.href='index.html'">
-                Earn <span class="text-green-400">BNB</span>
+                DIGIEX <span class="text-yellow-500">DEFAI</span>
             </span>
             <div class="hidden md:flex gap-4">
                 <button class="gold-btn !py-2 !px-5" onclick="location.href='index.html'">Dashboard</button>
@@ -21,12 +21,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 <button class="gold-btn !py-2 !px-5" onclick="location.href='leadership.html'">Leadership</button>
                 <button class="gold-btn !py-2 !px-5" onclick="location.href='history.html'">History</button>
             </div>
-            <button class="gold-btn">Connect Wallet</button>
+            <button id="connect-btn" onclick="connectWallet()" class="gold-btn">Connect Wallet</button>
         </nav>
     `;
     document.body.insertAdjacentHTML('afterbegin', navHTML);
 
-    // 3. Inject Mobile Navigation (Bottom - Fixed 5 items)
+    // 3. Inject Mobile Navigation
     const mobileNavHTML = `
         <div class="mobile-nav md:hidden px-2">
             <a href="index.html" class="mobile-nav-item ${window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') ? 'active' : ''}">
