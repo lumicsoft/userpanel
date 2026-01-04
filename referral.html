@@ -8,15 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #050505; color: white; min-height: 100vh; }
+    </style>
 </head>
 <body>
 
-    <main class="max-w-7xl mx-auto px-6 relative z-10">
+    <main class="max-w-7xl mx-auto px-6 relative z-10 pt-10 pb-20">
         
         <div class="premium-border p-6 mb-8">
             <p class="text-[10px] font-black orbitron text-yellow-500 uppercase mb-3">Your Referral Link</p>
             <div class="flex items-center gap-3 bg-black/40 p-2 pl-4 rounded-xl border border-white/10">
-                <input id="refURL" type="text" readonly value="https://earnbnb.io/ref/0x7F5...6fEa" class="bg-transparent border-none outline-none w-full text-xs text-gray-300 font-mono">
+                <input id="refURL" type="text" readonly value="Connect wallet to see link..." class="bg-transparent border-none outline-none w-full text-xs text-gray-300 font-mono">
                 <button onclick="copyLink()" class="gold-btn">COPY</button>
             </div>
         </div>
@@ -24,39 +27,39 @@
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
             <div class="premium-border p-5 text-center flex flex-col items-center">
                 <i data-lucide="users" class="w-6 h-6 text-green-400 mb-2"></i>
-                <p class="text-[8px] font-bold text-gray-400 uppercase">Referral Team</p>
-                <h3 class="text-xl font-black orbitron">150</h3>
+                <p class="text-[8px] font-bold text-gray-400 uppercase">Direct Team</p>
+                <h3 id="direct-count" class="text-xl font-black orbitron">0</h3>
             </div>
             <div class="premium-border p-5 text-center flex flex-col items-center">
                 <i data-lucide="network" class="w-6 h-6 text-emerald-400 mb-2"></i>
                 <p class="text-[8px] font-bold text-gray-400 uppercase">Total Team</p>
-                <h3 class="text-xl font-black orbitron">1,240</h3>
+                <h3 id="team-count" class="text-xl font-black orbitron">0</h3>
             </div>
             <div class="premium-border p-5 text-center flex flex-col items-center">
                 <i data-lucide="banknote" class="w-6 h-6 text-yellow-500 mb-2"></i>
                 <p class="text-[8px] font-bold text-gray-400 uppercase">Total Earnings</p>
-                <h3 class="text-xl font-black orbitron">$840.00</h3>
+                <h3 id="total-earned" class="text-xl font-black orbitron">$ 0.00</h3>
             </div>
             <div class="premium-border p-5 text-center flex flex-col items-center">
                 <i data-lucide="user-plus" class="w-6 h-6 text-yellow-600 mb-2"></i>
                 <p class="text-[8px] font-bold text-gray-400 uppercase">Direct Earnings</p>
-                <h3 class="text-xl font-black orbitron">$240.00</h3>
+                <h3 id="direct-earnings" class="text-xl font-black orbitron">$ 0.00</h3>
             </div>
             <div class="premium-border p-5 text-center flex flex-col items-center col-span-2 lg:col-span-1">
                 <i data-lucide="layers" class="w-6 h-6 text-green-500 mb-2"></i>
                 <p class="text-[8px] font-bold text-gray-400 uppercase">Level Earnings</p>
-                <h3 class="text-xl font-black orbitron">$600.00</h3>
+                <h3 id="level-earnings" class="text-xl font-black orbitron">$ 0.00</h3>
             </div>
         </div>
 
-        <div class="premium-border p-6 mb-8 text-center">
-            <p class="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-widest">Referral Balance</p>
-            <h2 class="text-3xl font-black orbitron text-white italic mb-6">$ 450.50</h2>
+        <div class="premium-border p-6 mb-8 text-center bg-yellow-500/5">
+            <p class="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-widest">Withdrawable Referral Balance</p>
+            <h2 id="ref-balance-display" class="text-3xl font-black orbitron text-white italic mb-6">$ 0.00</h2>
             <div class="flex flex-col md:flex-row gap-3">
-                <button class="gold-btn flex-1 !py-3 flex items-center justify-center gap-2">
-                    <i data-lucide="download" class="w-4 h-4"></i> Withdraw BNB
+                <button onclick="handleClaim()" class="gold-btn flex-1 !py-3 flex items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Withdraw Now
                 </button>
-                <button class="gold-btn flex-1 !py-3 !bg-transparent border border-yellow-500 !text-yellow-500 flex items-center justify-center gap-2">
+                <button onclick="handleCompoundDaily()" class="gold-btn flex-1 !py-3 !bg-transparent border border-yellow-500 !text-yellow-500 flex items-center justify-center gap-2">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i> Compound Now
                 </button>
             </div>
@@ -67,52 +70,30 @@
                 <h3 class="text-xl font-black orbitron uppercase italic"><span class="text-yellow-500">Team</span> Report</h3>
                 <div class="flex items-center gap-3 bg-black/50 p-2 rounded-xl border border-white/10 w-full md:w-auto">
                     <span class="text-[10px] font-bold uppercase text-gray-400 ml-2">Select Level:</span>
-                    <select class="bg-transparent text-yellow-500 font-bold outline-none cursor-pointer">
-                        <option value="1">Level 1</option>
-                        <option value="2">Level 2</option>
-                        <option value="2">Level 3</option>
-                        <option value="2">Level 4</option>
-                        <option value="2">Level 5</option>
-                        <option value="2">Level 6</option>
-                        <option value="2">Level 7</option>
-                        <option value="2">Level 8</option>
-                        <option value="2">Level 9</option>
-                        <option value="2">Level 10</option>
-                        <option value="2">Level 11</option>
-                        <option value="2">Level 12</option>
-                        <option value="2">Level 13</option>
-                        <option value="2">Level 14</option>
-                        <option value="2">Level 15</option>
-                        <option value="2">Level 16</option>
-                        <option value="2">Level 17</option>
-                        <option value="2">Level 18</option>
-                        <option value="2">Level 19</option>
-                        <option value="2">Level 20</option>
-                        <option value="2">Level 21</option>
-                        <option value="2">Level 22</option>
-                        <option value="2">Level 23</option>
-                        <option value="2">Level 24</option>
-                        <option value="2">Level 25</option>
-                        </select>
+                    <select id="levelSelect" onchange="loadLevelData(this.value)" class="bg-[#050505] text-yellow-500 font-bold outline-none cursor-pointer p-1">
+                        <script>
+                            for(let i=1; i<=25; i++) {
+                                document.write(`<option value="${i}">Level ${i}</option>`);
+                            }
+                        </script>
+                    </select>
                 </div>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="luxury-table">
+                <table class="luxury-table w-full text-left">
                     <thead>
-                        <tr>
-                            <th>User Address</th><th>Level</th><th>Total Deposit</th><th>Team Volume</th><th>Active Volume</th><th>Your Earnings</th><th>Join Date</th>
+                        <tr class="border-b border-white/10 text-[10px] uppercase text-gray-400">
+                            <th class="p-4">User Address</th>
+                            <th>Status</th>
+                            <th>Total Deposit</th>
+                            <th>Team Volume</th>
+                            <th>Join Date</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-300">
+                    <tbody id="team-table-body" class="text-gray-300 text-xs font-mono">
                         <tr>
-                            <td class="text-green-400 font-mono">0x4f...5a21</td>
-                            <td>Level 1</td>
-                            <td>$ 500.00</td>
-                            <td>$ 2,500.00</td>
-                            <td>$ 1,800.00</td>
-                            <td class="text-yellow-500">$ 25.00</td>
-                            <td>15-Jan-2026</td>
+                            <td colspan="5" class="p-10 text-center text-gray-500 italic">Connect wallet to view team report</td>
                         </tr>
                     </tbody>
                 </table>
@@ -121,8 +102,11 @@
 
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="components.js"></script>
+    <script src="web3-handler.js"></script>
     <script>
+        lucide.createIcons();
         function copyLink() {
             var input = document.getElementById("refURL");
             input.select();
@@ -131,5 +115,4 @@
         }
     </script>
 </body>
-
 </html>
