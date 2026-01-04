@@ -9,7 +9,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Specific Styles for History Page Filters */
         .filter-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -18,9 +17,9 @@
             transition: all 0.3s;
         }
         .filter-btn.active {
-            background: var(--gold-light);
+            background: #f59e0b;
             color: black;
-            border-color: var(--gold-light);
+            border-color: #f59e0b;
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
         }
         .history-card {
@@ -34,7 +33,7 @@
 </head>
 <body>
 
-    <main class="max-w-7xl mx-auto px-6 relative z-10">
+    <main class="max-w-7xl mx-auto px-6 relative z-10 pt-10">
         
         <div class="mb-10 text-center">
             <h1 class="text-3xl font-black orbitron italic uppercase tracking-tighter">Transaction <span class="text-yellow-500">History</span></h1>
@@ -49,40 +48,63 @@
             </div>
         </div>
 
-        <div id="history-container" class="space-y-4">
+        <div id="history-container" class="space-y-4 pb-20">
+            <div class="text-center py-20 text-gray-500 orbitron animate-pulse text-xs uppercase tracking-widest">
+                Connecting to Smart Contract...
             </div>
+        </div>
 
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="components.js"></script>
+    <script src="web3-handler.js"></script>
+    
     <script>
-        const data = {
-            deposit: [
-                { date: "21 Dec 2025", time: "14:30 PM", amount: "500.00", tp: "5.5%" },
-                { date: "15 Dec 2025", time: "09:15 AM", amount: "100.00", tp: "5.0%" }
-            ],
-            compounding: [
-                { date: "20 Dec 2025", time: "18:00 PM", amount: "25.50", tp: "0.25%" },
-                { date: "19 Dec 2025", time: "18:00 PM", amount: "22.10", tp: "0.25%" }
-            ],
-            income: [
-                { type: "Referral Bonus", date: "21 Dec 2025", time: "11:00 AM", amount: "50.00", color: "text-cyan-400" },
-                { type: "Daily ROI", date: "20 Dec 2025", time: "00:00 AM", amount: "12.40", color: "text-yellow-500" },
-                { type: "Leadership Bonus", date: "18 Dec 2025", time: "22:00 PM", amount: "150.00", color: "text-green-400" }
-            ]
-        };
+        // Icons initialize karein
+        lucide.createIcons();
 
-        function showHistory(type) {
+        // Ye function tab chalega jab user buttons click karega
+        async function showHistory(type) {
             const container = document.getElementById('history-container');
             const buttons = document.querySelectorAll('.filter-btn');
             
+            // Active button UI update
             buttons.forEach(btn => btn.classList.remove('active'));
-            document.getElementById('btn-' + type).classList.add('active');
+            const activeBtn = document.getElementById('btn-' + type);
+            if(activeBtn) activeBtn.classList.add('active');
 
-            let html = '';
-            if(type === 'deposit' || type === 'compounding') {
-                data[type].forEach(item => {
-                    html += `
+            // Loading state
+            container.innerHTML = `
+                <div class="text-center py-20">
+                    <div class="inline-block animate-spin mb-4 text-yellow-500">
+                        <i data-lucide="refresh-cw" class="w-8 h-8"></i>
+                    </div>
+                    <p class="text-[10px] font-bold text-gray-500 orbitron uppercase tracking-widest">Scanning Blockchain Events...</p>
+                </div>
+            `;
+            lucide.createIcons();
+
+            try {
+                // web3-handler.js se data fetch karein
+                // Ensure window.fetchBlockchainHistory is defined in web3-handler.js
+                const logs = await window.fetchBlockchainHistory(type);
+
+                if(!logs || logs.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-20 border border-dashed border-white/10 rounded-3xl">
+                            <i data-lucide="database-zap" class="w-10 h-10 text-gray-700 mx-auto mb-3"></i>
+                            <p class="text-gray-500 text-[10px] font-bold orbitron uppercase tracking-widest">No ${type} records found</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                let html = '';
+                logs.forEach(item => {
+                    if(type === 'deposit' || type === 'compounding') {
+                        html += `
                         <div class="history-card">
                             <div class="flex justify-between items-center">
                                 <div>
@@ -90,19 +112,17 @@
                                     <h3 class="text-lg font-black orbitron text-white mt-1">$ ${item.amount}</h3>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-[10px] font-black text-yellow-500 uppercase">TP Rate</p>
-                                    <p class="text-md font-black orbitron text-white">${item.tp}</p>
+                                    <p class="text-[10px] font-black text-yellow-500 uppercase">Status</p>
+                                    <p class="text-md font-black orbitron text-green-400">SUCCESS</p>
                                 </div>
                             </div>
                         </div>`;
-                });
-            } else {
-                data.income.forEach(item => {
-                    html += `
+                    } else {
+                        html += `
                         <div class="history-card">
                             <div class="flex justify-between items-center">
                                 <div>
-                                    <p class="text-[10px] font-black ${item.color} uppercase">${item.type}</p>
+                                    <p class="text-[10px] font-black ${item.color || 'text-cyan-400'} uppercase">${item.type || 'Income'}</p>
                                     <p class="text-[10px] font-bold text-gray-500 uppercase mt-1">${item.date} | ${item.time}</p>
                                 </div>
                                 <div class="text-right">
@@ -110,12 +130,24 @@
                                 </div>
                             </div>
                         </div>`;
+                    }
                 });
+                container.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<div class="text-center py-20 text-red-500 orbitron text-xs">Error connecting to blockchain. Please try again.</div>`;
             }
-            container.innerHTML = html;
         }
 
-        showHistory('deposit');
+        // Wallet connect hone ka intezaar karein phir data dikhayein
+        window.addEventListener('load', () => {
+            // Chhota sa delay taaki web3-handler initialize ho jaye
+            setTimeout(() => {
+                if (typeof showHistory === "function") {
+                    showHistory('deposit');
+                }
+            }, 1500);
+        });
     </script>
 </body>
 </html>
