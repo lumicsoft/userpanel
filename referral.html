@@ -8,17 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Background fix to match dashboard */
-        body { background: #050505; color: white; min-height: 100vh; overflow-x: hidden; }
-        .premium-border { position: relative; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; backdrop-filter: blur(10px); }
-        .gold-btn { background: linear-gradient(135deg, #f59e0b, #d97706); color: black; font-weight: 800; padding: 12px 24px; border-radius: 12px; transition: all 0.3s; }
-        .gold-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2); }
-    </style>
 </head>
 <body>
 
-    <main class="max-w-7xl mx-auto px-6 relative z-10 pt-10 pb-20">
+    <main class="max-w-7xl mx-auto px-6 relative z-10 pt-10">
         
         <div class="premium-border p-6 mb-8">
             <p class="text-[10px] font-black orbitron text-yellow-500 uppercase mb-3">Your Referral Link</p>
@@ -31,7 +24,7 @@
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
             <div class="premium-border p-5 text-center flex flex-col items-center">
                 <i data-lucide="users" class="w-6 h-6 text-green-400 mb-2"></i>
-                <p class="text-[8px] font-bold text-gray-400 uppercase">Direct Team</p>
+                <p class="text-[8px] font-bold text-gray-400 uppercase">Referral Team</p>
                 <h3 id="direct-count" class="text-xl font-black orbitron">0</h3>
             </div>
             <div class="premium-border p-5 text-center flex flex-col items-center">
@@ -56,12 +49,12 @@
             </div>
         </div>
 
-        <div class="premium-border p-6 mb-8 text-center bg-yellow-500/5">
+        <div class="premium-border p-6 mb-8 text-center">
             <p class="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-widest">Referral Balance</p>
             <h2 id="ref-balance-display" class="text-3xl font-black orbitron text-white italic mb-6">$ 0.00</h2>
             <div class="flex flex-col md:flex-row gap-3">
                 <button onclick="handleClaim()" class="gold-btn flex-1 !py-3 flex items-center justify-center gap-2">
-                    <i data-lucide="download" class="w-4 h-4"></i> Withdraw Now
+                    <i data-lucide="download" class="w-4 h-4"></i> Withdraw BNB
                 </button>
                 <button onclick="handleCompoundDaily()" class="gold-btn flex-1 !py-3 !bg-transparent border border-yellow-500 !text-yellow-500 flex items-center justify-center gap-2">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i> Compound Now
@@ -74,28 +67,28 @@
                 <h3 class="text-xl font-black orbitron uppercase italic"><span class="text-yellow-500">Team</span> Report</h3>
                 <div class="flex items-center gap-3 bg-black/50 p-2 rounded-xl border border-white/10 w-full md:w-auto">
                     <span class="text-[10px] font-bold uppercase text-gray-400 ml-2">Select Level:</span>
-                    <select id="levelSelect" onchange="loadLevelData(this.value)" class="bg-transparent text-yellow-500 font-bold outline-none cursor-pointer">
+                    <select id="levelSelect" onchange="loadLevelData(this.value)" class="bg-[#0b0b0b] text-yellow-500 font-bold outline-none cursor-pointer">
                         <option value="1">Level 1</option>
                         <option value="2">Level 2</option>
                         <option value="3">Level 3</option>
+                        <option value="4">Level 4</option>
+                        <option value="5">Level 5</option>
                     </select>
                 </div>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="luxury-table w-full text-left">
                     <thead>
-                        <tr class="text-[10px] uppercase text-gray-500 border-b border-white/10">
-                            <th class="pb-4 pr-4">User Address</th>
-                            <th class="pb-4 pr-4">Level</th>
-                            <th class="pb-4 pr-4">Total Deposit</th>
-                            <th class="pb-4 pr-4">Team Volume</th>
-                            <th class="pb-4 pr-4">Earnings</th>
-                            <th class="pb-4">Join Date</th>
+                        <tr class="border-b border-white/10">
+                            <th class="p-4">User Address</th><th>Level</th><th>Total Deposit</th><th>Team Volume</th><th>Active Volume</th><th>Your Earnings</th><th>Join Date</th>
                         </tr>
                     </thead>
-                    <tbody id="team-table-body" class="text-gray-300 text-xs font-mono">
-                        </tbody>
+                    <tbody id="team-table-body" class="text-gray-300">
+                        <tr>
+                            <td colspan="7" class="p-10 text-center text-gray-500 italic">Connect wallet to view report</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
