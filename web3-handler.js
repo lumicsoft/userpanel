@@ -49,15 +49,26 @@ async function setupApp(address) {
         return;
     }
 
-    signer = provider.getSigner();
-    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+    // Set Global Variables
+    window.signer = provider.getSigner();
+    signer = window.signer;
+    
+    window.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+    contract = window.contract;
+    
     usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, signer);
     
     updateNavbar(address);
     fetchAllData(address);
     
+    // Page specific triggers
     if(document.getElementById('team-table-body')) fetchTeamReport(address, 1);
-    if(document.getElementById('history-container')) window.showHistory('deposit'); 
+    if(document.getElementById('history-container')) window.showHistory('deposit');
+    
+    // TRIGGER FOR DEPOSITS PAGE
+    if(document.getElementById('deposits-grid')) {
+        if (typeof loadActiveDeposits === "function") loadActiveDeposits();
+    }
 }
 
 // --- DATA FETCHING ---
@@ -91,7 +102,7 @@ async function fetchAllData(address) {
     } catch (err) { console.error("Data Fetch Error:", err); }
 }
 
-// --- HISTORY LOGIC (ENHANCED INCOME TYPES) ---
+// --- HISTORY LOGIC ---
 async function fetchBlockchainHistory(type) {
     if (!contract || !signer) return [];
     const address = await signer.getAddress();
@@ -108,7 +119,6 @@ async function fetchBlockchainHistory(type) {
             let itemType = e.args.rewardType || type.toUpperCase();
             let itemColor = (type === 'income') ? 'text-yellow-500' : 'text-gray-400';
 
-            // Custom logic for Income categories
             if(type === 'income' && e.args.rewardType) {
                 const rType = e.args.rewardType.toLowerCase();
                 if(rType.includes('roi')) {
@@ -203,8 +213,7 @@ async function handleCompoundDaily() {
     } catch (err) { console.error(err); }
 }
 
-// Global linking for HTML
-window.fetchBlockchainHistory = fetchBlockchainHistory;
+// Global Linking
 window.showHistory = async function(type) {
     const container = document.getElementById('history-container');
     if(!container) return;
