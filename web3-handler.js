@@ -49,7 +49,6 @@ async function setupApp(address) {
         return;
     }
 
-    // Set Global Variables
     window.signer = provider.getSigner();
     signer = window.signer;
     
@@ -60,15 +59,44 @@ async function setupApp(address) {
     
     updateNavbar(address);
     fetchAllData(address);
+    start8HourCountdown(); // <--- Countdown start kiya
     
-    // Page specific triggers
     if(document.getElementById('team-table-body')) fetchTeamReport(address, 1);
     if(document.getElementById('history-container')) window.showHistory('deposit');
     
-    // TRIGGER FOR DEPOSITS PAGE
     if(document.getElementById('deposits-grid')) {
         if (typeof loadActiveDeposits === "function") loadActiveDeposits();
     }
+}
+
+// --- TIMER LOGIC (8-HOUR REVERSE COUNTDOWN) ---
+function start8HourCountdown() {
+    const timerElement = document.getElementById('next-timer');
+    if (!timerElement) return;
+
+    setInterval(() => {
+        const now = new Date();
+        const hours = now.getHours();
+        let targetHour;
+
+        // India Time Windows: 00, 08, 16
+        if (hours < 8) targetHour = 8;
+        else if (hours < 16) targetHour = 16;
+        else targetHour = 24;
+
+        const targetTime = new Date();
+        targetTime.setHours(targetHour, 0, 0, 0);
+
+        const diff = targetTime - now;
+
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        // Reverse countdown display: 07:59:59
+        timerElement.innerText = 
+            `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }, 1000);
 }
 
 // --- DATA FETCHING ---
@@ -90,11 +118,29 @@ async function fetchAllData(address) {
         updateText('direct-count', extra.directsCount.toString());
         updateText('level-earnings', `$ ${format(extra.rewardsReferral)}`);
 
+        // Withdraw & Capital displays
         const withdrawable = (parseFloat(format(live.pendingROI)) + parseFloat(format(live.pendingCap))).toFixed(2);
         updateText('withdrawable-display', `$ ${withdrawable}`);
         updateText('compounding-balance', `$ ${withdrawable}`);
-        updateText('ref-balance-display', `$ ${withdrawable}`);
+        updateText('capital-investment-display', `$ ${format(user.totalActiveDeposit)}`);
+        updateText('capital-withdrawn-display', `$ ${format(user.totalWithdrawn)}`);
+        
+        // Projected 24h Return (5% logic)
+        const dailyROI = (parseFloat(format(user.totalActiveDeposit)) * 0.05).toFixed(2);
+        updateText('project-return', `$ ${dailyROI}`);
+
         updateText('rank-display', getRankName(extra.rank));
+
+        // Compound Power (CP)
+        const cpVal = Math.floor(parseFloat(format(user.totalActiveDeposit)) / 100);
+        updateText('cp-display', cpVal);
+
+        // Status Badge update
+        const badge = document.getElementById('status-badge');
+        if(badge && parseFloat(format(user.totalActiveDeposit)) > 0) {
+            badge.innerText = "● Active Status";
+            badge.className = "px-4 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] font-black border border-green-500/30 uppercase";
+        }
 
         const refUrl = `${window.location.origin}/register.html?ref=${user.username}`;
         if(document.getElementById('refURL')) document.getElementById('refURL').value = refUrl;
@@ -197,7 +243,7 @@ function loadLevelData(val) {
 }
 
 // --- ACTIONS ---
-async function handleClaim() {
+window.handleClaim = async function() {
     try {
         const tx = await contract.claimDailyReward(0);
         await tx.wait();
@@ -205,9 +251,20 @@ async function handleClaim() {
     } catch (err) { console.error(err); }
 }
 
-async function handleCompoundDaily() {
+window.handleCompoundDaily = async function() {
     try {
         const tx = await contract.compoundDailyReward(0);
+        await tx.wait();
+        location.reload();
+    } catch (err) { console.error(err); }
+}
+
+// Capital Withdrawal Function
+window.handleCapitalWithdraw = async function() {
+    try {
+        const ok = confirm("Are you sure? Principal withdrawal will stop your rewards.");
+        if(!ok) return;
+        const tx = await contract.withdrawPrincipal();
         await tx.wait();
         location.reload();
     } catch (err) { console.error(err); }
