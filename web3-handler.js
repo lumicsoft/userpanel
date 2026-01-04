@@ -13,7 +13,8 @@ const CONTRACT_ABI = [
     "function withdrawPrincipal() external",
     "function getLiveBalance(address uA) view returns (uint256 pendingROI, uint256 pendingCap)",
     "function users(address) view returns (address referrer, string username, bool registered, uint256 joinDate, uint256 totalActiveDeposit, uint256 teamActiveDeposit, uint256 teamTotalDeposit, uint256 totalDeposited, uint256 totalWithdrawn, uint256 totalEarnings)",
-    "function usersExtra(address) view returns (uint256 rewardsReferral, uint256 rewardsOnboarding, uint256 rewardsRank, uint256 reserveDailyCapital, uint256 reserveDailyROI, uint256 reserveNetwork, uint32 teamCount, uint32 directsCount, uint32 directsQuali, uint8 rank)"
+    "function usersExtra(address) view returns (uint256 rewardsReferral, uint256 rewardsOnboarding, uint256 rewardsRank, uint256 reserveDailyCapital, uint256 reserveDailyROI, uint256 reserveNetwork, uint32 teamCount, uint32 directsCount, uint32 directsQuali, uint8 rank)",
+    "event Registered(address indexed user, address indexed referrer, string username)" // Event listener ke liye zaroori
 ];
 
 const USDT_ABI = [
@@ -50,6 +51,11 @@ async function setupApp(address) {
     
     updateNavbar(address);
     fetchAllData(address);
+    
+    // Agar referral page par hain, toh team report load karein
+    if(document.getElementById('team-table-body')) {
+        fetchTeamReport(address, 1);
+    }
 }
 
 async function fetchAllData(address) {
@@ -65,40 +71,77 @@ async function fetchAllData(address) {
             return;
         }
 
-        // --- Dashboard Main Stats ---
+        // Stats update logic
         updateText('total-deposit-display', `$ ${format(user.totalDeposited)}`);
         updateText('active-deposit', `$ ${format(user.totalActiveDeposit)}`);
         updateText('total-earned', `$ ${format(user.totalEarnings)}`);
         updateText('total-withdrawn', `$ ${format(user.totalWithdrawn)}`);
-        updateText('capital-investment-display', `$ ${format(user.totalActiveDeposit)}`);
-        updateText('capital-withdrawn-display', `$ ${format(user.totalWithdrawn)}`);
+        updateText('team-count', extra.teamCount.toString());
+        updateText('direct-count', extra.directsCount.toString());
+        updateText('level-earnings', `$ ${format(extra.rewardsReferral)}`); // Example mapping
 
-        // --- Live Calculations ---
-        const pendingROI = parseFloat(format(live.pendingROI));
-        const pendingCap = parseFloat(format(live.pendingCap));
-        const withdrawable = (pendingROI + pendingCap).toFixed(2);
-
+        const withdrawable = (parseFloat(format(live.pendingROI)) + parseFloat(format(live.pendingCap))).toFixed(2);
         updateText('withdrawable-display', `$ ${withdrawable}`);
         updateText('compounding-balance', `$ ${withdrawable}`);
-        updateText('projected-return', `$ ${(parseFloat(format(user.totalActiveDeposit)) * 0.05).toFixed(2)}`); // Assuming 5% daily
+        updateText('ref-balance-display', `$ ${withdrawable}`);
 
-        // --- Rank & Status ---
         updateText('rank-display', getRankName(extra.rank));
-        const statusBadge = document.getElementById('status-badge');
-        if (statusBadge && user.totalActiveDeposit.gt(0)) {
-            statusBadge.innerText = "● Active Status";
-            statusBadge.classList.replace('text-red-500', 'text-green-400');
-            statusBadge.classList.replace('bg-red-500/20', 'bg-green-500/20');
-        }
 
-        // --- Referral Link ---
         const refUrl = `${window.location.origin}/register.html?ref=${user.username}`;
         if(document.getElementById('refURL')) document.getElementById('refURL').value = refUrl;
 
     } catch (err) { console.error("Data Fetch Error:", err); }
 }
 
-// --- Dashboard Actions ---
+// --- TEAM REPORT EVENT LISTENER LOGIC ---
+async function fetchTeamReport(userAddress, level) {
+    const tableBody = document.getElementById('team-table-body');
+    if(!tableBody) return;
+
+    tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-yellow-500 animate-pulse">Fetching Team Data from Blockchain...</td></tr>`;
+
+    try {
+        // Step 1: Filter "Registered" events where this user is the referrer
+        const filter = contract.filters.Registered(null, userAddress);
+        const logs = await contract.queryFilter(filter);
+
+        if(logs.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No members found at Level ${level}</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = ""; // Clear loader
+
+        // Step 2: Loop through events and fetch user details
+        for (let log of logs) {
+            const memberAddr = log.args.user;
+            const memberData = await contract.users(memberAddr);
+            
+            const row = document.createElement('tr');
+            row.className = "border-b border-white/5 hover:bg-white/5 transition-all";
+            row.innerHTML = `
+                <td class="p-4 text-green-400 font-mono">${memberAddr.substring(0,6)}...${memberAddr.substring(38)}</td>
+                <td>Level ${level}</td>
+                <td>$ ${format(memberData.totalDeposited)}</td>
+                <td>$ ${format(memberData.teamTotalDeposit)}</td>
+                <td>$ ${format(memberData.totalActiveDeposit)}</td>
+                <td class="text-yellow-500">$ 0.00</td>
+                <td>${new Date(memberData.joinDate * 1000).toLocaleDateString()}</td>
+            `;
+            tableBody.appendChild(row);
+        }
+    } catch (err) {
+        console.error("Event Fetch Error:", err);
+        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Error loading blockchain data</td></tr>`;
+    }
+}
+
+// Select box level change handler
+function loadLevelData(val) {
+    signer.getAddress().then(addr => fetchTeamReport(addr, val));
+}
+
+// Actions
 async function handleClaim() {
     try {
         const tx = await contract.claimDailyReward(0);
@@ -115,20 +158,8 @@ async function handleCompoundDaily() {
     } catch (err) { console.error(err); }
 }
 
-async function handleCapitalWithdraw() {
-    try {
-        const tx = await contract.withdrawPrincipal();
-        await tx.wait();
-        location.reload();
-    } catch (err) { console.error(err); }
-}
-
-// Helpers
 const format = (val) => ethers.utils.formatUnits(val || 0, 18);
-const updateText = (id, val) => { 
-    const el = document.getElementById(id);
-    if(el) el.innerText = val; 
-};
+const updateText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
 
 function getRankName(r) {
     const names = ["Inviter", "Promoter", "Leader", "Partner", "Star", "Royal Star", "Crown Star"];
