@@ -1,9 +1,9 @@
 let provider, signer, contract, usdtContract;
 
-// --- TESTNET CONFIGURATION ---
-const CONTRACT_ADDRESS = "YOUR_TESTNET_CONTRACT_ADDRESS"; // Apna Testnet address yahan dalein
-const USDT_ADDRESS = "0x337610d27c2425019392024265f210e69503487c"; // BSC Testnet Mock USDT
-const TESTNET_CHAIN_ID = 97; // BSC Testnet ID
+// --- CONFIGURATION ---
+const CONTRACT_ADDRESS = "YOUR_TESTNET_CONTRACT_ADDRESS"; 
+const USDT_ADDRESS = "0x337610d27c2425019392024265f210e69503487c"; 
+const TESTNET_CHAIN_ID = 97; 
 
 const CONTRACT_ABI = [
     "function register(string username, string referrerUsername) external",
@@ -13,8 +13,7 @@ const CONTRACT_ABI = [
     "function withdrawPrincipal() external",
     "function getLiveBalance(address uA) view returns (uint256 pendingROI, uint256 pendingCap)",
     "function users(address) view returns (address referrer, string username, bool registered, uint256 joinDate, uint256 totalActiveDeposit, uint256 teamActiveDeposit, uint256 teamTotalDeposit, uint256 totalDeposited, uint256 totalWithdrawn, uint256 totalEarnings)",
-    "function usersExtra(address) view returns (uint256 rewardsReferral, uint256 rewardsOnboarding, uint256 rewardsRank, uint256 reserveDailyCapital, uint256 reserveDailyROI, uint256 reserveNetwork, uint32 teamCount, uint32 directsCount, uint32 directsQuali, uint8 rank)",
-    "function getContractInfo() view returns (uint256 _launchDate, uint256 _totalRegisteredUsers, uint256 _totalActiveUsers, uint256 _totalDeposited, uint256 _totalWithdrawn)"
+    "function usersExtra(address) view returns (uint256 rewardsReferral, uint256 rewardsOnboarding, uint256 rewardsRank, uint256 reserveDailyCapital, uint256 reserveDailyROI, uint256 reserveNetwork, uint32 teamCount, uint32 directsCount, uint32 directsQuali, uint8 rank)"
 ];
 
 const USDT_ABI = [
@@ -40,10 +39,8 @@ async function connectWallet() {
 
 async function setupApp(address) {
     const { chainId } = await provider.getNetwork();
-    
-    // Testnet Check
     if (chainId !== TESTNET_CHAIN_ID) {
-        alert("Please switch to BSC Testnet (Chain ID 97) in MetaMask!");
+        alert("Please switch to BSC Testnet!");
         return;
     }
 
@@ -63,69 +60,83 @@ async function fetchAllData(address) {
             contract.getLiveBalance(address)
         ]);
 
-        // Agar user registered nahi hai toh console mein warn karein
         if (!user.registered) {
-            console.warn("User is not registered yet!");
-            updateText('total-deposit-display', "Not Registered");
+            updateText('total-deposit-display', "$ 0.00");
             return;
         }
 
+        // --- Dashboard Main Stats ---
         updateText('total-deposit-display', `$ ${format(user.totalDeposited)}`);
         updateText('active-deposit', `$ ${format(user.totalActiveDeposit)}`);
         updateText('total-earned', `$ ${format(user.totalEarnings)}`);
         updateText('total-withdrawn', `$ ${format(user.totalWithdrawn)}`);
+        updateText('capital-investment-display', `$ ${format(user.totalActiveDeposit)}`);
+        updateText('capital-withdrawn-display', `$ ${format(user.totalWithdrawn)}`);
 
-        const withdrawable = parseFloat(format(live.pendingROI)) + parseFloat(format(live.pendingCap));
-        updateText('compounding-balance', `$ ${withdrawable.toFixed(2)}`);
+        // --- Live Calculations ---
+        const pendingROI = parseFloat(format(live.pendingROI));
+        const pendingCap = parseFloat(format(live.pendingCap));
+        const withdrawable = (pendingROI + pendingCap).toFixed(2);
 
-        updateText('team-count', extra.teamCount.toString());
-        updateText('direct-count', extra.directsCount.toString());
+        updateText('withdrawable-display', `$ ${withdrawable}`);
+        updateText('compounding-balance', `$ ${withdrawable}`);
+        updateText('projected-return', `$ ${(parseFloat(format(user.totalActiveDeposit)) * 0.05).toFixed(2)}`); // Assuming 5% daily
+
+        // --- Rank & Status ---
         updateText('rank-display', getRankName(extra.rank));
+        const statusBadge = document.getElementById('status-badge');
+        if (statusBadge && user.totalActiveDeposit.gt(0)) {
+            statusBadge.innerText = "● Active Status";
+            statusBadge.classList.replace('text-red-500', 'text-green-400');
+            statusBadge.classList.replace('bg-red-500/20', 'bg-green-500/20');
+        }
 
-        // Referral link using username from contract
-        const refUrl = `${window.location.origin}?ref=${user.username}`;
+        // --- Referral Link ---
+        const refUrl = `${window.location.origin}/register.html?ref=${user.username}`;
         if(document.getElementById('refURL')) document.getElementById('refURL').value = refUrl;
 
     } catch (err) { console.error("Data Fetch Error:", err); }
 }
 
-// Transaction Functions
-async function handleDeposit(amountUSD) {
+// --- Dashboard Actions ---
+async function handleClaim() {
     try {
-        const amount = ethers.utils.parseUnits(amountUSD.toString(), 18);
-        const address = await signer.getAddress();
-        
-        // Check if Registered first
-        const user = await contract.users(address);
-        if(!user.registered) return alert("Please register first!");
-
-        // Allowance check
-        const allowance = await usdtContract.allowance(address, CONTRACT_ADDRESS);
-        if (allowance.lt(amount)) {
-            const appTx = await usdtContract.approve(CONTRACT_ADDRESS, ethers.constants.MaxUint256);
-            await appTx.wait();
-        }
-
-        const tx = await contract.deposit(amount);
+        const tx = await contract.claimDailyReward(0);
         await tx.wait();
-        alert("Deposit Successful!");
         location.reload();
-    } catch (err) { 
-        console.error(err);
-        alert("Transaction failed! Check console."); 
-    }
+    } catch (err) { console.error(err); }
+}
+
+async function handleCompoundDaily() {
+    try {
+        const tx = await contract.compoundDailyReward(0);
+        await tx.wait();
+        location.reload();
+    } catch (err) { console.error(err); }
+}
+
+async function handleCapitalWithdraw() {
+    try {
+        const tx = await contract.withdrawPrincipal();
+        await tx.wait();
+        location.reload();
+    } catch (err) { console.error(err); }
 }
 
 // Helpers
-const format = (val) => ethers.utils.formatUnits(val, 18);
-const updateText = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
+const format = (val) => ethers.utils.formatUnits(val || 0, 18);
+const updateText = (id, val) => { 
+    const el = document.getElementById(id);
+    if(el) el.innerText = val; 
+};
+
 function getRankName(r) {
     const names = ["Inviter", "Promoter", "Leader", "Partner", "Star", "Royal Star", "Crown Star"];
-    return names[r] || "Unknown";
+    return names[r] || "N/A";
 }
 
 function updateNavbar(addr) {
-    const btn = document.querySelector('.gold-btn');
+    const btn = document.getElementById('connect-btn');
     if(btn) btn.innerText = addr.substring(0,6) + "..." + addr.substring(38);
 }
 
