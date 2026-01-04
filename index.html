@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Earn BNB</title>
+    <title>Dashboard | DIGIEX DEFAI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -13,41 +13,43 @@
         .capital-btn { background: linear-gradient(135deg, #00f2ff, #0066ff) !important; color: white !important; }
         .animate-spin-slow { animation: spin 8s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        body { background-color: #050505; color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: #050505; color: white; font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
     </style>
 </head>
 <body>
-
-    <header class="py-5 px-6 border-b border-white/5 bg-black/40 backdrop-blur-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="orbitron font-black text-xl tracking-tighter italic text-yellow-500 uppercase">DIGIEX DEFAI</h1>
-            
-            <button onclick="connectWallet()" id="connect-btn" class="gold-btn py-2 px-6 text-[10px] orbitron font-bold">
-                CONNECT WALLET
-            </button>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-6 mt-8 relative z-10">
+    <main class="max-w-7xl mx-auto px-6 relative z-10 pb-24">
         <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
             <div class="premium-border p-4 text-center">
-                <div>
-                    <p class="text-[9px] font-bold text-gray-400 uppercase">Total Deposits</p>
-                    <h3 id="total-deposit-display" class="text-lg font-black orbitron">$ 0</h3>
-                </div>
+                <p class="text-[9px] font-bold text-gray-400 uppercase">Total Deposits</p>
+                <h3 id="total-deposit-display" class="text-lg font-black orbitron">$ 0</h3>
             </div>
-            <div class="premium-border p-4 text-center"><div><p class="text-[9px] font-bold text-gray-400 uppercase">Active Deposit</p><h3 id="active-deposit" class="text-lg font-black orbitron text-green-400">$ 0</h3></div></div>
-            <div class="premium-border p-4 text-center"><div><p class="text-[9px] font-bold text-gray-400 uppercase">Total Earned</p><h3 id="total-earned" class="text-lg font-black orbitron text-green-500">$ 0</h3></div></div>
-            <div class="premium-border p-4 text-center"><div><p class="text-[9px] font-bold text-gray-400 uppercase">Withdrawable</p><h3 id="withdrawable-display" class="text-lg font-black orbitron text-emerald-400">$ 0</h3></div></div>
-            <div class="premium-border p-4 text-center"><div><p class="text-[9px] font-bold text-yellow-500 uppercase">Rank</p><h3 id="rank-display" class="text-lg font-black orbitron text-yellow-500">...</h3></div></div>
-            <div class="premium-border p-4 text-center"><div><p class="text-[9px] font-bold text-red-400 uppercase">Total Withdrawal</p><h3 id="total-withdrawn" class="text-lg font-black orbitron text-red-400">$ 0</h3></div></div>
+            <div class="premium-border p-4 text-center">
+                <p class="text-[9px] font-bold text-gray-400 uppercase">Active Deposit</p>
+                <h3 id="active-deposit" class="text-lg font-black orbitron text-green-400">$ 0</h3>
+            </div>
+            <div class="premium-border p-4 text-center">
+                <p class="text-[9px] font-bold text-gray-400 uppercase">Total Earned</p>
+                <h3 id="total-earned" class="text-lg font-black orbitron text-green-500">$ 0</h3>
+            </div>
+            <div class="premium-border p-4 text-center">
+                <p class="text-[9px] font-bold text-gray-400 uppercase">Withdrawable</p>
+                <h3 id="withdrawable-display" class="text-lg font-black orbitron text-emerald-400">$ 0</h3>
+            </div>
+            <div class="premium-border p-4 text-center">
+                <p class="text-[9px] font-bold text-yellow-500 uppercase">Rank</p>
+                <h3 id="rank-display" class="text-lg font-black orbitron text-yellow-500">...</h3>
+            </div>
+            <div class="premium-border p-4 text-center">
+                <p class="text-[9px] font-bold text-red-400 uppercase">Total Withdrawal</p>
+                <h3 id="total-withdrawn" class="text-lg font-black orbitron text-red-400">$ 0</h3>
+            </div>
         </div>
 
         <div class="premium-border p-6 mb-8">
             <p class="text-[10px] font-black orbitron text-yellow-500 uppercase mb-3">Referral Link</p>
             <div class="flex items-center gap-3 bg-black/40 p-2 pl-4 rounded-xl border border-white/10">
                 <input id="refURL" type="text" readonly value="Connect wallet to generate..." class="bg-transparent border-none outline-none w-full text-xs text-gray-300 font-mono">
-                <button onclick="copyLink()" class="gold-btn !py-2">COPY</button>
+                <button onclick="copyLink()" class="gold-btn !py-2 !px-6">COPY</button>
             </div>
             <p id="ref-error" class="text-[10px] text-red-500 font-bold uppercase mt-3 hidden italic">
                 ⚠️ Min $10 self investment required to activate referral link
@@ -60,10 +62,10 @@
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Compounding Balance</p>
                 <h3 id="compounding-balance" class="text-4xl font-black orbitron text-white mb-8">$ 0.00</h3>
                 <div class="flex flex-col md:flex-row justify-center gap-4 max-w-2xl mx-auto">
-                    <button onclick="handleClaim()" class="gold-btn withdraw-btn px-10 flex-1">
+                    <button onclick="handleClaim()" class="gold-btn withdraw-btn px-10 flex-1 py-4 orbitron text-xs font-bold">
                         <i data-lucide="arrow-down-to-line" class="w-4 h-4 inline-block mr-2"></i> Withdraw Now
                     </button>
-                    <button onclick="handleCompoundDaily()" class="gold-btn px-10 flex-1">
+                    <button onclick="handleCompoundDaily()" class="gold-btn px-10 flex-1 py-4 orbitron text-xs font-bold">
                         Compound Now <i data-lucide="zap" class="w-3 h-3 inline-block ml-1"></i>
                     </button>
                 </div>
@@ -87,13 +89,14 @@
                         <h4 id="capital-withdrawn-display" class="text-xl font-black orbitron text-blue-400">$ 0.00</h4>
                     </div>
                 </div>
+                <p class="text-[8px] text-blue-300/60 uppercase mt-4 text-center tracking-widest font-bold italic">Note: Principal withdrawal subject to contract lock-up period</p>
             </div>
         </div>
 
         <div class="premium-border p-8 md:p-12 mb-8">
             <div class="flex justify-between items-center mb-10">
                 <h2 class="text-xl font-black orbitron italic uppercase">Compound <span class="text-green-400">Power</span></h2>
-                <span class="px-4 py-1 rounded-full bg-red-500/20 text-red-500 text-[10px] font-black border border-red-500/30 uppercase animate-pulse">● Inactive Status</span>
+                <span id="status-badge" class="px-4 py-1 rounded-full bg-red-500/20 text-red-500 text-[10px] font-black border border-red-500/30 uppercase animate-pulse">● Inactive</span>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div class="lg:col-span-4 bg-black/50 rounded-[32px] p-10 border border-white/10 text-center">
@@ -117,40 +120,28 @@
                 </div>
             </div>
         </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
-            <button onclick="location.href='deposits.html'" class="premium-border p-8 hover:bg-white/5 transition-all text-center">
-                <i data-lucide="wallet-minimal" class="w-8 h-8 text-yellow-500 mx-auto mb-4"></i>
-                <span class="text-xs font-black uppercase">Deposit</span>
-            </button>
-            <button onclick="handleClaim()" class="premium-border p-8 hover:bg-white/5 transition-all text-center">
-                <i data-lucide="hand-coins" class="w-8 h-8 text-yellow-500 mx-auto mb-4"></i>
-                <span class="text-xs font-black uppercase">Withdraw</span>
-            </button>
-            <button onclick="location.href='referral.html'" class="premium-border p-8 hover:bg-white/5 transition-all text-center">
-                <i data-lucide="users" class="w-8 h-8 text-yellow-500 mx-auto mb-4"></i>
-                <span class="text-xs font-black uppercase">Referral</span>
-            </button>
-            <button onclick="location.href='leadership.html'" class="premium-border p-8 hover:bg-white/5 transition-all text-center">
-                <i data-lucide="bar-chart-3" class="w-8 h-8 text-yellow-500 mx-auto mb-4"></i>
-                <span class="text-xs font-black uppercase">Leadership</span>
-            </button>
-        </div>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="components.js"></script>
     <script src="web3-handler.js"></script>
 
     <script>
-        lucide.createIcons();
+        // Copy functionality logic
         function copyLink() {
             const refInput = document.getElementById('refURL');
-            if (refInput.value.includes('http')) {
+            const totalDepText = document.getElementById('total-deposit-display').innerText;
+            const totalDepositValue = parseFloat(totalDepText.replace('$', '').trim()) || 0;
+            const errorElement = document.getElementById('ref-error');
+
+            if (totalDepositValue >= 10) {
                 refInput.select();
                 navigator.clipboard.writeText(refInput.value);
-                alert("Copied!");
+                errorElement.classList.add('hidden');
+                alert("Referral link copied!");
             } else {
-                alert("Connect wallet first!");
+                errorElement.classList.remove('hidden');
+                errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
     </script>
