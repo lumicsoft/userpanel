@@ -56,12 +56,8 @@ async function setupApp(address) {
     updateNavbar(address);
     fetchAllData(address);
     
-    // Page specific triggers
     if(document.getElementById('team-table-body')) fetchTeamReport(address, 1);
-    if(document.getElementById('history-container')) {
-        // Default history load
-        window.showHistory('deposit'); 
-    }
+    if(document.getElementById('history-container')) window.showHistory('deposit'); 
 }
 
 // --- DATA FETCHING ---
@@ -95,11 +91,10 @@ async function fetchAllData(address) {
     } catch (err) { console.error("Data Fetch Error:", err); }
 }
 
-// --- HISTORY LOGIC (NEW) ---
+// --- HISTORY LOGIC (ENHANCED INCOME TYPES) ---
 async function fetchBlockchainHistory(type) {
     if (!contract || !signer) return [];
     const address = await signer.getAddress();
-    let logs = [];
 
     try {
         let filter;
@@ -107,16 +102,36 @@ async function fetchBlockchainHistory(type) {
         else if (type === 'compounding') filter = contract.filters.Compounded(address);
         else if (type === 'income') filter = contract.filters.RewardClaimed(address);
 
-        const events = await contract.queryFilter(filter, -10000); // Scans last 10k blocks
+        const events = await contract.queryFilter(filter, -10000); 
 
-        return events.map(e => ({
-            date: `Block ${e.blockNumber}`,
-            time: "Confirmed",
-            amount: format(e.args.amount),
-            type: e.args.rewardType || type.toUpperCase(),
-            tp: type === 'compounding' ? "0.25%" : "DYNAMIC",
-            color: type === 'income' ? 'text-yellow-500' : 'text-gray-400'
-        })).reverse();
+        return events.map(e => {
+            let itemType = e.args.rewardType || type.toUpperCase();
+            let itemColor = (type === 'income') ? 'text-yellow-500' : 'text-gray-400';
+
+            // Custom logic for Income categories
+            if(type === 'income' && e.args.rewardType) {
+                const rType = e.args.rewardType.toLowerCase();
+                if(rType.includes('roi')) {
+                    itemType = "Daily ROI Reward";
+                    itemColor = "text-yellow-500";
+                } else if(rType.includes('referral') || rType.includes('level')) {
+                    itemType = "Referral Bonus";
+                    itemColor = "text-cyan-400";
+                } else if(rType.includes('rank') || rType.includes('lead')) {
+                    itemType = "Leadership Reward";
+                    itemColor = "text-green-400";
+                }
+            }
+
+            return {
+                date: `Block ${e.blockNumber}`,
+                time: "Confirmed",
+                amount: format(e.args.amount),
+                type: itemType,
+                tp: type === 'compounding' ? "0.25%" : "DYNAMIC",
+                color: itemColor
+            };
+        }).reverse();
     } catch (err) {
         console.error("History Error:", err);
         return [];
@@ -128,14 +143,14 @@ async function fetchTeamReport(userAddress, level) {
     const tableBody = document.getElementById('team-table-body');
     if(!tableBody) return;
 
-    tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-yellow-500 animate-pulse">Fetching Team Data...</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-yellow-500 animate-pulse text-[10px] orbitron">SCANNING BLOCKCHAIN...</td></tr>`;
 
     try {
         const filter = contract.filters.Registered(null, userAddress);
         const logs = await contract.queryFilter(filter);
 
         if(logs.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-500">No members found</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-500 text-[10px] orbitron">NO TEAM MEMBERS FOUND</td></tr>`;
             return;
         }
 
@@ -145,20 +160,20 @@ async function fetchTeamReport(userAddress, level) {
             const memberData = await contract.users(memberAddr);
             
             const row = document.createElement('tr');
-            row.className = "border-b border-white/5 hover:bg-white/5 transition-all";
+            row.className = "border-b border-white/5 hover:bg-white/5 transition-all text-[11px]";
             row.innerHTML = `
-                <td class="p-4 text-green-400 font-mono">${memberAddr.substring(0,6)}...${memberAddr.substring(38)}</td>
-                <td>Level ${level}</td>
-                <td>$ ${format(memberData.totalDeposited)}</td>
-                <td>$ ${format(memberData.teamTotalDeposit)}</td>
-                <td>$ ${format(memberData.totalActiveDeposit)}</td>
-                <td class="text-yellow-500">$ 0.00</td>
-                <td>${new Date(memberData.joinDate * 1000).toLocaleDateString()}</td>
+                <td class="p-4 text-green-400 font-mono font-bold">${memberAddr.substring(0,6)}...${memberAddr.substring(38)}</td>
+                <td class="orbitron">LVL ${level}</td>
+                <td class="font-bold">$ ${format(memberData.totalDeposited)}</td>
+                <td class="font-bold">$ ${format(memberData.teamTotalDeposit)}</td>
+                <td class="font-bold">$ ${format(memberData.totalActiveDeposit)}</td>
+                <td class="text-yellow-500 font-bold">$ 0.00</td>
+                <td class="text-gray-400">${new Date(memberData.joinDate * 1000).toLocaleDateString()}</td>
             `;
             tableBody.appendChild(row);
         }
     } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Error loading data</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Node Connection Error</td></tr>`;
     }
 }
 
@@ -194,15 +209,15 @@ window.showHistory = async function(type) {
     const container = document.getElementById('history-container');
     if(!container) return;
     
-    // UI selection
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + type).classList.add('active');
+    const activeBtn = document.getElementById('btn-' + type);
+    if(activeBtn) activeBtn.classList.add('active');
     
-    container.innerHTML = `<div class="p-10 text-center animate-pulse text-yellow-500">SCANNING BLOCKCHAIN...</div>`;
+    container.innerHTML = `<div class="p-10 text-center animate-pulse text-yellow-500 text-[10px] orbitron tracking-widest">SCANNING BLOCKCHAIN...</div>`;
     
     const logs = await fetchBlockchainHistory(type);
     if(logs.length === 0) {
-        container.innerHTML = `<div class="p-10 text-center text-gray-500">NO DATA FOUND</div>`;
+        container.innerHTML = `<div class="p-10 text-center text-gray-500 text-[10px] orbitron">NO RECORDS FOUND</div>`;
         return;
     }
 
@@ -210,8 +225,8 @@ window.showHistory = async function(type) {
         <div class="history-card">
             <div class="flex justify-between items-center">
                 <div>
-                    <p class="text-[10px] font-black ${item.color} uppercase">${item.type}</p>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase mt-1">${item.date}</p>
+                    <p class="text-[10px] font-black ${item.color} uppercase tracking-tighter">${item.type}</p>
+                    <p class="text-[10px] font-bold text-gray-500 uppercase mt-1 italic">${item.date}</p>
                 </div>
                 <div class="text-right">
                     <h3 class="text-lg font-black orbitron ${type === 'income' ? 'text-green-400' : 'text-white'}">
