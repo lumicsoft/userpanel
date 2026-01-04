@@ -14,7 +14,10 @@ const CONTRACT_ABI = [
     "function getLiveBalance(address uA) view returns (uint256 pendingROI, uint256 pendingCap)",
     "function users(address) view returns (address referrer, string username, bool registered, uint256 joinDate, uint256 totalActiveDeposit, uint256 teamActiveDeposit, uint256 teamTotalDeposit, uint256 totalDeposited, uint256 totalWithdrawn, uint256 totalEarnings)",
     "function usersExtra(address) view returns (uint256 rewardsReferral, uint256 rewardsOnboarding, uint256 rewardsRank, uint256 reserveDailyCapital, uint256 reserveDailyROI, uint256 reserveNetwork, uint32 teamCount, uint32 directsCount, uint32 directsQuali, uint8 rank)",
-    "event Registered(address indexed user, address indexed referrer, string username)" // Event listener ke liye zaroori
+    "event Registered(address indexed user, address indexed referrer, string username)",
+    "event Deposited(address indexed user, uint256 amount)",
+    "event Compounded(address indexed user, uint256 amount)",
+    "event RewardClaimed(address indexed user, uint256 amount, string rewardType)"
 ];
 
 const USDT_ABI = [
@@ -23,6 +26,7 @@ const USDT_ABI = [
     "function balanceOf(address account) view returns (uint256)"
 ];
 
+// --- INITIALIZATION ---
 async function init() {
     if (window.ethereum) {
         provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -52,12 +56,15 @@ async function setupApp(address) {
     updateNavbar(address);
     fetchAllData(address);
     
-    // Agar referral page par hain, toh team report load karein
-    if(document.getElementById('team-table-body')) {
-        fetchTeamReport(address, 1);
+    // Page specific triggers
+    if(document.getElementById('team-table-body')) fetchTeamReport(address, 1);
+    if(document.getElementById('history-container')) {
+        // Default history load
+        window.showHistory('deposit'); 
     }
 }
 
+// --- DATA FETCHING ---
 async function fetchAllData(address) {
     try {
         const [user, extra, live] = await Promise.all([
@@ -66,25 +73,20 @@ async function fetchAllData(address) {
             contract.getLiveBalance(address)
         ]);
 
-        if (!user.registered) {
-            updateText('total-deposit-display', "$ 0.00");
-            return;
-        }
+        if (!user.registered) return;
 
-        // Stats update logic
         updateText('total-deposit-display', `$ ${format(user.totalDeposited)}`);
         updateText('active-deposit', `$ ${format(user.totalActiveDeposit)}`);
         updateText('total-earned', `$ ${format(user.totalEarnings)}`);
         updateText('total-withdrawn', `$ ${format(user.totalWithdrawn)}`);
         updateText('team-count', extra.teamCount.toString());
         updateText('direct-count', extra.directsCount.toString());
-        updateText('level-earnings', `$ ${format(extra.rewardsReferral)}`); // Example mapping
+        updateText('level-earnings', `$ ${format(extra.rewardsReferral)}`);
 
         const withdrawable = (parseFloat(format(live.pendingROI)) + parseFloat(format(live.pendingCap))).toFixed(2);
         updateText('withdrawable-display', `$ ${withdrawable}`);
         updateText('compounding-balance', `$ ${withdrawable}`);
         updateText('ref-balance-display', `$ ${withdrawable}`);
-
         updateText('rank-display', getRankName(extra.rank));
 
         const refUrl = `${window.location.origin}/register.html?ref=${user.username}`;
@@ -93,26 +95,51 @@ async function fetchAllData(address) {
     } catch (err) { console.error("Data Fetch Error:", err); }
 }
 
-// --- TEAM REPORT EVENT LISTENER LOGIC ---
+// --- HISTORY LOGIC (NEW) ---
+async function fetchBlockchainHistory(type) {
+    if (!contract || !signer) return [];
+    const address = await signer.getAddress();
+    let logs = [];
+
+    try {
+        let filter;
+        if (type === 'deposit') filter = contract.filters.Deposited(address);
+        else if (type === 'compounding') filter = contract.filters.Compounded(address);
+        else if (type === 'income') filter = contract.filters.RewardClaimed(address);
+
+        const events = await contract.queryFilter(filter, -10000); // Scans last 10k blocks
+
+        return events.map(e => ({
+            date: `Block ${e.blockNumber}`,
+            time: "Confirmed",
+            amount: format(e.args.amount),
+            type: e.args.rewardType || type.toUpperCase(),
+            tp: type === 'compounding' ? "0.25%" : "DYNAMIC",
+            color: type === 'income' ? 'text-yellow-500' : 'text-gray-400'
+        })).reverse();
+    } catch (err) {
+        console.error("History Error:", err);
+        return [];
+    }
+}
+
+// --- TEAM REPORT ---
 async function fetchTeamReport(userAddress, level) {
     const tableBody = document.getElementById('team-table-body');
     if(!tableBody) return;
 
-    tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-yellow-500 animate-pulse">Fetching Team Data from Blockchain...</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-yellow-500 animate-pulse">Fetching Team Data...</td></tr>`;
 
     try {
-        // Step 1: Filter "Registered" events where this user is the referrer
         const filter = contract.filters.Registered(null, userAddress);
         const logs = await contract.queryFilter(filter);
 
         if(logs.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No members found at Level ${level}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-500">No members found</td></tr>`;
             return;
         }
 
-        tableBody.innerHTML = ""; // Clear loader
-
-        // Step 2: Loop through events and fetch user details
+        tableBody.innerHTML = "";
         for (let log of logs) {
             const memberAddr = log.args.user;
             const memberData = await contract.users(memberAddr);
@@ -131,17 +158,20 @@ async function fetchTeamReport(userAddress, level) {
             tableBody.appendChild(row);
         }
     } catch (err) {
-        console.error("Event Fetch Error:", err);
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Error loading blockchain data</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Error loading data</td></tr>`;
     }
 }
 
-// Select box level change handler
+// --- UTILITIES ---
+const format = (val) => ethers.utils.formatUnits(val || 0, 18);
+const updateText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+const getRankName = (r) => ["Inviter", "Promoter", "Leader", "Partner", "Star", "Royal Star", "Crown Star"][r] || "NONE (-)";
+
 function loadLevelData(val) {
     signer.getAddress().then(addr => fetchTeamReport(addr, val));
 }
 
-// Actions
+// --- ACTIONS ---
 async function handleClaim() {
     try {
         const tx = await contract.claimDailyReward(0);
@@ -158,13 +188,40 @@ async function handleCompoundDaily() {
     } catch (err) { console.error(err); }
 }
 
-const format = (val) => ethers.utils.formatUnits(val || 0, 18);
-const updateText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+// Global linking for HTML
+window.fetchBlockchainHistory = fetchBlockchainHistory;
+window.showHistory = async function(type) {
+    const container = document.getElementById('history-container');
+    if(!container) return;
+    
+    // UI selection
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + type).classList.add('active');
+    
+    container.innerHTML = `<div class="p-10 text-center animate-pulse text-yellow-500">SCANNING BLOCKCHAIN...</div>`;
+    
+    const logs = await fetchBlockchainHistory(type);
+    if(logs.length === 0) {
+        container.innerHTML = `<div class="p-10 text-center text-gray-500">NO DATA FOUND</div>`;
+        return;
+    }
 
-function getRankName(r) {
-    const names = ["Inviter", "Promoter", "Leader", "Partner", "Star", "Royal Star", "Crown Star"];
-    return names[r] || "N/A";
-}
+    container.innerHTML = logs.map(item => `
+        <div class="history-card">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-[10px] font-black ${item.color} uppercase">${item.type}</p>
+                    <p class="text-[10px] font-bold text-gray-500 uppercase mt-1">${item.date}</p>
+                </div>
+                <div class="text-right">
+                    <h3 class="text-lg font-black orbitron ${type === 'income' ? 'text-green-400' : 'text-white'}">
+                        ${type === 'income' ? '+' : ''}$ ${item.amount}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    `).join('');
+};
 
 function updateNavbar(addr) {
     const btn = document.getElementById('connect-btn');
