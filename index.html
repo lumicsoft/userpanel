@@ -13,20 +13,22 @@
         .capital-btn { background: linear-gradient(135deg, #00f2ff, #0066ff) !important; color: white !important; }
         .animate-spin-slow { animation: spin 8s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        /* Background fix for visibility */
         body { background-color: #050505; color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
 <body>
 
-    <header class="py-6 px-6 border-b border-white/5 mb-8 bg-black/20 backdrop-blur-md sticky top-0 z-50">
+    <header class="py-5 px-6 border-b border-white/5 bg-black/40 backdrop-blur-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="orbitron font-black text-xl tracking-tighter italic text-yellow-500">DIGIEX DEFAI</h1>
-            <button onclick="connectWallet()" id="connect-btn" class="gold-btn py-2 px-6 text-[10px] orbitron font-bold uppercase">Connect Wallet</button>
+            <h1 class="orbitron font-black text-xl tracking-tighter italic text-yellow-500 uppercase">DIGIEX DEFAI</h1>
+            
+            <button onclick="connectWallet()" id="connect-btn" class="gold-btn py-2 px-6 text-[10px] orbitron font-bold">
+                CONNECT WALLET
+            </button>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 relative z-10">
+    <main class="max-w-7xl mx-auto px-6 mt-8 relative z-10">
         <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
             <div class="premium-border p-4 text-center">
                 <div>
@@ -71,11 +73,10 @@
         <div class="premium-border p-8 mb-8 bg-blue-950/10 border-blue-500/30">
             <div class="relative z-10">
                 <div class="flex justify-center mb-8">
-                    <button onclick="handleCapitalWithdraw()" class="gold-btn capital-btn px-12 py-4 text-sm tracking-widest shadow-blue-500/20">
+                    <button onclick="handleCapitalWithdraw()" class="gold-btn capital-btn px-12 py-4 text-sm tracking-widest shadow-blue-500/20 font-bold orbitron italic">
                         <i data-lucide="unlock" class="w-4 h-4 inline-block mr-2"></i> Capital Withdrawal
                     </button>
                 </div>
-                
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-black/40 p-4 rounded-2xl border border-white/5 text-center">
                         <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">Total Investment</p>
@@ -86,7 +87,6 @@
                         <h4 id="capital-withdrawn-display" class="text-xl font-black orbitron text-blue-400">$ 0.00</h4>
                     </div>
                 </div>
-                <p class="text-[8px] text-blue-300/60 uppercase mt-4 text-center tracking-widest font-bold">Note: Capital withdrawal may be subject to a lock-up period</p>
             </div>
         </div>
 
@@ -118,33 +118,39 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-            <button onclick="location.href='deposits.html'" class="premium-border p-8 hover:bg-white/5 transition-all"><div class="flex flex-col items-center gap-4"><i data-lucide="wallet-minimal" class="w-8 h-8 text-yellow-500"></i><span class="text-xs font-black uppercase">Deposit</span></div></button>
-            <button onclick="handleClaim()" class="premium-border p-8 hover:bg-white/5 transition-all"><div class="flex flex-col items-center gap-4"><i data-lucide="hand-coins" class="w-8 h-8 text-yellow-500"></i><span class="text-xs font-black uppercase">Withdraw</span></div></button>
-            <button class="premium-border p-8 hover:bg-white/5 transition-all" onclick="location.href='referral.html'"><div class="flex flex-col items-center gap-4"><i data-lucide="users" class="w-8 h-8 text-yellow-500"></i><span class="text-xs font-black uppercase">Referral</span></div></button>
-            <button class="premium-border p-8 hover:bg-white/5 transition-all" onclick="location.href='leadership.html'"><div class="flex flex-col items-center gap-4"><i data-lucide="bar-chart-3" class="w-8 h-8 text-yellow-500"></i><span class="text-xs font-black uppercase">Leadership</span></div></button>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
+            <button onclick="location.href='deposits.html'" class="premium-border p-8 hover:bg-white/5 transition-all text-center">
+                <i data-lucide="wallet-minimal" class="w-8 h-8 text-yellow-500 mx-auto mb-4"></i>
+                <span class="text-xs font-black uppercase">Deposit</span>
+            </button>
+            <button onclick="handleClaim()" class="premium-border p-8 hover:bg-white/5 transition-all text-center">
+                <i data-lucide="hand-coins" class="w-8 h-8 text-yellow-500 mx-auto mb-4"></i>
+                <span class="text-xs font-black uppercase">Withdraw</span>
+            </button>
+            <button onclick="location.href='referral.html'" class="premium-border p-8 hover:bg-white/5 transition-all text-center">
+                <i data-lucide="users" class="w-8 h-8 text-yellow-500 mx-auto mb-4"></i>
+                <span class="text-xs font-black uppercase">Referral</span>
+            </button>
+            <button onclick="location.href='leadership.html'" class="premium-border p-8 hover:bg-white/5 transition-all text-center">
+                <i data-lucide="bar-chart-3" class="w-8 h-8 text-yellow-500 mx-auto mb-4"></i>
+                <span class="text-xs font-black uppercase">Leadership</span>
+            </button>
         </div>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-    <script src="components.js"></script>
     <script src="web3-handler.js"></script>
 
     <script>
         lucide.createIcons();
         function copyLink() {
-            const totalDepText = document.getElementById('total-deposit-display').innerText;
-            const totalDepositValue = parseFloat(totalDepText.replace('$', '').trim());
-            const errorElement = document.getElementById('ref-error');
             const refInput = document.getElementById('refURL');
-
-            if (totalDepositValue >= 10) {
+            if (refInput.value.includes('http')) {
                 refInput.select();
                 navigator.clipboard.writeText(refInput.value);
-                errorElement.classList.add('hidden');
-                alert("Referral link copied!");
+                alert("Copied!");
             } else {
-                errorElement.classList.remove('hidden');
+                alert("Connect wallet first!");
             }
         }
     </script>
