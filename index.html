@@ -9,11 +9,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Specific styles for this page layout */
-        .withdraw-btn {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
-            color: white !important;
-        }
+        .withdraw-btn { background: linear-gradient(135deg, #ff416c, #ff4b2b) !important; color: white !important; }
+        .capital-btn { background: linear-gradient(135deg, #00f2ff, #0066ff) !important; color: white !important; }
         .animate-spin-slow { animation: spin 8s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
@@ -46,12 +43,11 @@
             </p>
         </div>
 
-        <div class="premium-border p-8 mb-8 text-center bg-emerald-950/20">
+        <div class="premium-border p-8 mb-6 text-center bg-emerald-950/20">
             <div class="relative z-10">
                 <i data-lucide="refresh-cw" class="w-8 h-8 text-yellow-500 mx-auto mb-2 animate-spin-slow"></i>
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Compounding Balance</p>
                 <h3 class="text-4xl font-black orbitron text-white mb-8">$ 0.00</h3>
-                
                 <div class="flex flex-col md:flex-row justify-center gap-4 max-w-2xl mx-auto">
                     <button class="gold-btn withdraw-btn px-10 flex-1">
                         <i data-lucide="arrow-down-to-line" class="w-4 h-4 inline-block mr-2"></i> Withdraw Now
@@ -60,6 +56,28 @@
                         Compound Now <i data-lucide="zap" class="w-3 h-3 inline-block ml-1"></i>
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <div class="premium-border p-8 mb-8 bg-blue-950/10 border-blue-500/30">
+            <div class="relative z-10">
+                <div class="flex justify-center mb-8">
+                    <button class="gold-btn capital-btn px-12 py-4 text-sm tracking-widest shadow-blue-500/20">
+                        <i data-lucide="unlock" class="w-4 h-4 inline-block mr-2"></i> Capital Withdrawal
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-black/40 p-4 rounded-2xl border border-white/5 text-center">
+                        <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">Total Investment</p>
+                        <h4 class="text-xl font-black orbitron text-white">$ 0.00</h4>
+                    </div>
+                    <div class="bg-black/40 p-4 rounded-2xl border border-white/5 text-center">
+                        <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">Total Withdrawn</p>
+                        <h4 class="text-xl font-black orbitron text-blue-400">$ 0.00</h4>
+                    </div>
+                </div>
+                <p class="text-[8px] text-blue-300/60 uppercase mt-4 text-center tracking-widest font-bold">Note: Capital withdrawal may be subject to a lock-up period</p>
             </div>
         </div>
 
@@ -97,47 +115,25 @@
             <button class="premium-border p-8 hover:bg-white/5 transition-all" onclick="location.href='referral.html'"><div class="flex flex-col items-center gap-4"><i data-lucide="users" class="w-8 h-8 text-yellow-500"></i><span class="text-xs font-black uppercase">Referral</span></div></button>
             <button class="premium-border p-8 hover:bg-white/5 transition-all" onclick="location.href='leadership.html'"><div class="flex flex-col items-center gap-4"><i data-lucide="bar-chart-3" class="w-8 h-8 text-yellow-500"></i><span class="text-xs font-black uppercase">Leadership</span></div></button>
         </div>
-
-        <div class="premium-border mb-8 p-6 md:p-8">
-            <h3 class="text-xl font-black orbitron mb-6 uppercase italic"><span class="text-yellow-500">Daily Returns</span> by CP Level</h3>
-            <div class="overflow-x-auto">
-                <table class="luxury-table">
-                    <thead><tr><th>CP Purchased</th><th>Daily Return</th></tr></thead>
-                    <tbody class="text-gray-300">
-                        <tr><td>&lt; 500 USDT</td><td class="text-green-400">5.00%</td></tr>
-                        <tr><td>500 - 999 USDT</td><td class="text-green-400">5.25%</td></tr>
-                        <tr><td>1,000 - 2,499 USDT 🔥</td><td class="text-yellow-500">5.50%</td></tr>
-                        <tr><td>2,500 - 4,999 USDT</td><td class="text-green-400">5.75%</td></tr>
-                        <tr><td>≥ 5,000 USDT 🔥</td><td class="text-yellow-400">6.00%</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </main>
 
     <script src="components.js"></script>
     <script>
-        // Referral Copy Logic with Investment Check
+        lucide.createIcons();
         function copyLink() {
-            // "Total Deposits" card se value nikalna
             const totalDepText = document.getElementById('total-deposit-display').innerText;
             const totalDepositValue = parseFloat(totalDepText.replace('$', '').trim());
-            
             const errorElement = document.getElementById('ref-error');
             const refInput = document.getElementById('refURL');
 
             if (totalDepositValue >= 10) {
-                // Success: Copy link
                 refInput.select();
                 refInput.setSelectionRange(0, 99999);
                 navigator.clipboard.writeText(refInput.value);
-                
                 errorElement.classList.add('hidden');
                 alert("Referral link copied successfully!");
             } else {
-                // Failure: Show Error
                 errorElement.classList.remove('hidden');
-                // Scroll to error for mobile users
                 errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
